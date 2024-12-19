@@ -1,0 +1,12 @@
+Source: ros-jazzy-laser-filters
+Section: misc
+Priority: optional
+Maintainer: Jon Binney <jon.binney@gmail.com>
+Build-Depends: debhelper (>= 9.0.0), ros-jazzy-ament-cmake-auto, ros-jazzy-ament-cmake-gtest <!nocheck>, ros-jazzy-angles, ros-jazzy-filters, ros-jazzy-laser-geometry, ros-jazzy-launch-testing-ament-cmake <!nocheck>, ros-jazzy-message-filters, ros-jazzy-pluginlib, ros-jazzy-rclcpp, ros-jazzy-rclcpp-components, ros-jazzy-rclcpp-lifecycle, ros-jazzy-sensor-msgs, ros-jazzy-tf2, ros-jazzy-tf2-geometry-msgs, ros-jazzy-tf2-kdl, ros-jazzy-tf2-ros, ros-jazzy-ros-workspace
+Homepage: http://ros.org/wiki/laser_filters
+Standards-Version: 3.9.2
+
+Package: ros-jazzy-laser-filters
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, ros-jazzy-angles, ros-jazzy-filters, ros-jazzy-laser-geometry, ros-jazzy-message-filters, ros-jazzy-pluginlib, ros-jazzy-rclcpp, ros-jazzy-rclcpp-components, ros-jazzy-rclcpp-lifecycle, ros-jazzy-sensor-msgs, ros-jazzy-tf2, ros-jazzy-tf2-geometry-msgs, ros-jazzy-tf2-kdl, ros-jazzy-tf2-ros, ros-jazzy-ros-workspace
+Description: Assorted filters designed to operate on 2D planar laser scanners, which use the sensor_msgs/LaserScan type.
