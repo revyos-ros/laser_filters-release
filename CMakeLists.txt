@@ -12,23 +12,38 @@ ament_auto_find_build_dependencies()
 # Build
 ##############################################################################
 
-ament_auto_add_library(laser_scan_filters SHARED src/laser_scan_filters.cpp)
+if(${rclcpp_VERSION_MAJOR} GREATER_EQUAL 20)
+    add_compile_definitions(RCLCPP_SUPPORTS_MATCHED_CALLBACKS)
+endif()
 
-set(FILTER_CHAINS
-    scan_to_cloud_filter_chain
-    scan_to_scan_filter_chain
-    generic_laser_filter_node
+ament_auto_add_library(laser_scan_filters SHARED src/laser_scan_filters.cpp)
+ament_auto_add_library(laser_filter_chains SHARED
+                         src/scan_to_cloud_filter_chain.cpp
+                         src/scan_to_scan_filter_chain.cpp)
+
+# The rclcpp_components_register_node macro registers an rclcpp component for the node with
+# the ament resource index AND creates a templated executable that spins the given node.
+
+rclcpp_components_register_node(
+    laser_filter_chains
+    PLUGIN "ScanToCloudFilterChain"
+    EXECUTABLE "scan_to_cloud_filter_chain"
 )
-foreach(FILTER_CHAIN ${FILTER_CHAINS})
-    ament_auto_add_executable(${FILTER_CHAIN} src/${FILTER_CHAIN}.cpp)
-endforeach()
+
+rclcpp_components_register_node(
+    laser_filter_chains
+    PLUGIN "ScanToScanFilterChain"
+    EXECUTABLE "scan_to_scan_filter_chain"
+)
+
+ament_auto_add_executable(generic_laser_filter_node src/generic_laser_filter_node.cpp)
 
 ##############################################################################
 # Install
 ##############################################################################
 
 pluginlib_export_plugin_description_file(filters laser_filters_plugins.xml)
-ament_auto_package(INSTALL_TO_SHARE examples)
+ament_auto_package(INSTALL_TO_SHARE examples test)
 
 ##############################################################################
 # Test
@@ -62,4 +77,36 @@ if(BUILD_TESTING)
             --gtest_output=xml:${RESULT_FILENAME}
         RESULT_FILE ${RESULT_FILENAME}
     )
+
+    set(TEST_NAME test_speckle_filter)
+    set(RESULT_FILENAME ${AMENT_TEST_RESULTS_DIR}/${PROJECT_NAME}/${TEST_NAME}.gtest.xml)
+    ament_add_gtest_executable(${TEST_NAME} test/${TEST_NAME}.cpp)
+    ament_target_dependencies(${TEST_NAME} angles)
+    target_link_libraries(${TEST_NAME} laser_scan_filters)
+    ament_add_test(
+        ${TEST_NAME}
+        COMMAND
+            $<TARGET_FILE:${TEST_NAME}>
+            --ros-args
+            --gtest_output=xml:${RESULT_FILENAME}
+        RESULT_FILE ${RESULT_FILENAME}
+    )
+
+    set(TEST_NAME test_scan_shadows_filter)
+    set(RESULT_FILENAME ${AMENT_TEST_RESULTS_DIR}/${PROJECT_NAME}/${TEST_NAME}.gtest.xml)
+    ament_add_gtest_executable(${TEST_NAME} test/${TEST_NAME}.cpp)
+    ament_target_dependencies(${TEST_NAME} filters rclcpp sensor_msgs)
+    target_link_libraries(${TEST_NAME} laser_scan_filters)
+    ament_add_test(
+        ${TEST_NAME}
+        COMMAND
+            $<TARGET_FILE:${TEST_NAME}>
+            --ros-args
+            --gtest_output=xml:${RESULT_FILENAME}
+        RESULT_FILE ${RESULT_FILENAME}
+    )
+
+    find_package(launch_testing_ament_cmake)
+    add_launch_test(test/test_polygon_filter.test.py)
+    add_launch_test(test/test_speckle_filter.test.py)
 endif()
